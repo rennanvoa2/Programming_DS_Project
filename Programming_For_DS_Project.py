@@ -1,8 +1,16 @@
 
+
 #Imports
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from copy import deepcopy
+from sklearn.svm import LinearSVR
+
 
 #Define the URI from the github files (Number of Arrivels and Income)
 income_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Income.csv?token=AGBCKJR4XZIDLPKEMDYI5UK5VXNQW'
@@ -45,20 +53,177 @@ arrivals_df['2007'].count()
 #count nulls in 2008
 arrivals_df['2007'].isnull().sum()
 
-#drop rows with more than 5 NANs values
-arrivals_df = arrivals_df.dropna(thresh=(len(arrivals_df.loc[:,'2008':'2017'].columns) - 5))
+#drop the Is_Country column becouse we dont need it anymore
+arrivals_df.drop('Is_Country', inplace=True, axis=1)
+
+#drop rows with 3 or more NANs values
+arrivals_df.dropna(thresh=(len(arrivals_df.loc[:,'2008':'2017'].columns) - 1), inplace=True, axis=0)
 
 #Check if the number of itens is correspondent after drop the rows
 arrivals_df['Country Code'].count()
 
-#drop the Is_Country column becouse we dont need it anymore
-arrivals_df.drop('Is_Country', inplace=True, axis=1)
+
+
+##################################CHANGES START HERE ######################################################
+
+
+#preparing data for regressors
+my_data = arrivals_df[['2007','2008','2009','2010','2011','2012','2013','2014', '2015','2016', '2017']]
+my_data_complete = pd.DataFrame()
+my_data_incomplete = my_data[my_data.isna().any(axis=1)]
+my_data_complete = my_data[~my_data.isna().any(axis=1)]
+
+
+
+#dataframe with the name of the columns
+years = pd.DataFrame(my_data.columns)
+
+#variables to hold the Mean Squared Errors for each model
+kn_errors = []
+linear_errors = []
+linear_svr_errors = []
+
+
+
+
+#KN Regressor
+for i in years[0]:
+    
+    #i = years[0][0]
+    
+    X_train, X_test, y_train, y_test = train_test_split(my_data_complete.loc[:,my_data_complete.columns != i].values,
+                                                        my_data_complete.loc[:,i].values, test_size = 0.2, random_state = 0)
+    
+    regressor = KNeighborsRegressor(2, 
+                                   weights ='distance', 
+                                   metric = 'euclidean')
+    
+    trained_model = regressor.fit(X_train, 
+                             y_train)
+    
+    my_data_incomplete_2 = deepcopy(my_data_incomplete)
+    my_data_incomplete_2.loc[:, my_data_incomplete.columns != i] = my_data_incomplete_2.loc[:, 
+                            my_data_incomplete.columns != i].apply(lambda row: row.fillna(row.mean()), axis=1)
+    imputed_INCOME = trained_model.predict(my_data_incomplete_2.loc[:,my_data_incomplete_2.columns != i])
+    temp_df = pd.DataFrame(imputed_INCOME.reshape(-1,1), columns = [i])
+    
+    y_pred = regressor.predict(X_test)
+    kn_errors.append(mean_squared_error(y_test, y_pred))
+
+
+
+
+
+
+#Linear Regressor
+for i in years[0]:
+    
+    #i = years[0][0]
+    
+    regressor = LinearRegression()
+    
+    X_train, X_test, y_train, y_test = train_test_split(my_data_complete.loc[:,my_data_complete.columns != i].values,
+                                                        my_data_complete.loc[:,i].values, test_size = 0.2, random_state = 0)
+    
+    trained_model = regressor.fit(X_train, 
+                             y_train)
+    
+    my_data_incomplete_2 = deepcopy(my_data_incomplete)
+    my_data_incomplete_2.loc[:, my_data_incomplete.columns != i] = my_data_incomplete_2.loc[:, 
+                            my_data_incomplete.columns != i].apply(lambda row: row.fillna(row.mean()), axis=1)
+    imputed_INCOME = trained_model.predict(my_data_incomplete_2.loc[:,my_data_incomplete_2.columns != i])
+    temp_df = pd.DataFrame(imputed_INCOME.reshape(-1,1), columns = [i])
+    
+
+    y_pred = regressor.predict(X_test)
+    linear_errors.append(mean_squared_error(y_test, y_pred))
+
+
+
+#SVR
+for i in years[0]:
+    
+    #i = years[0][0]
+    
+    regressor = LinearSVR()
+    
+    X_train, X_test, y_train, y_test = train_test_split(my_data_complete.loc[:,my_data_complete.columns != i].values,
+                                                        my_data_complete.loc[:,i].values, test_size = 0.2, random_state = 0)
+    
+    trained_model = regressor.fit(X_train, 
+                             y_train)
+    
+    my_data_incomplete_2 = deepcopy(my_data_incomplete)
+    my_data_incomplete_2.loc[:, my_data_incomplete.columns != i] = my_data_incomplete_2.loc[:, 
+                            my_data_incomplete.columns != i].apply(lambda row: row.fillna(row.mean()), axis=1)
+    imputed_INCOME = trained_model.predict(my_data_incomplete_2.loc[:,my_data_incomplete_2.columns != i])
+    temp_df = pd.DataFrame(imputed_INCOME.reshape(-1,1), columns = [i])
+    
+    y_pred = regressor.predict(X_test)
+    linear_svr_errors.append(mean_squared_error(y_test, y_pred))
+
+
+
+
+
+#Test for checking the best model 
+test = []
+
+for i in range(0, len(arrivals_df.loc[:,'2007':'2017'].columns)):
+    l = []
+    l.extend((kn_errors[i], linear_errors[i], linear_svr_errors[i]))
+    
+    if min(l) == kn_errors[i]:
+        test.append("Best = KNN")
+    elif min(l) == linear_errors[i]:
+        test.append("Best = Linear")
+    elif min(l) == linear_svr_errors[i]:
+        test.append("Best = SVR")
+
+print("KNN =",test.count("Best = KNN"),'\nLinear =',test.count("Best = Linear") ,'\nSVR =',test.count("Best = SVR"))
+
+
+
+
+
+#Running the algorithms 20 times, +- 80% of the time SVR was the best, so we are using SVR Model for fitting NAN's
+
+#SVR
+for i in years[0]:
+    
+    regressor = LinearSVR()
+    
+    X_train, X_test, y_train, y_test = train_test_split(my_data_complete.loc[:,my_data_complete.columns != i].values,
+                                                        my_data_complete.loc[:,i].values, test_size = 0.2, random_state = 0)
+    
+    trained_model = regressor.fit(X_train, 
+                             y_train)
+    
+    my_data_incomplete_2 = deepcopy(my_data_incomplete)
+    my_data_incomplete_2.loc[:, my_data_incomplete.columns != i] = my_data_incomplete_2.loc[:, 
+                            my_data_incomplete.columns != i].apply(lambda row: row.fillna(row.mean()), axis=1)
+    imputed_INCOME = trained_model.predict(my_data_incomplete_2.loc[:,my_data_incomplete_2.columns != i])
+    temp_df = pd.DataFrame(imputed_INCOME.reshape(-1,1), columns = [i])
+    
+    #now we are filling my_data_incomplete 
+    for index in range(len(temp_df)):
+        if np.isnan(my_data_incomplete[i][index]):
+            my_data_incomplete[i][index] = temp_df[i][index]
+
+
+
+#and filling the nan's on arrivals_df
+arrivals_df.loc[:,'2007':'2017'] = pd.concat([my_data_complete, my_data_incomplete])
+
+
+
+##################################CHANGES END HERE ######################################################
 
 
 
 #fill the NaN values with the row mean
-arrivals_df.loc[:, '2007':'2017'] = arrivals_df.loc[:, '2007':'2017'].apply(lambda
-               row: row.fillna(row.mean()), axis=1)
+#arrivals_df.loc[:, '2007':'2017'] = arrivals_df.loc[:, '2007':'2017'].apply(lambda
+#               row: row.fillna(row.mean()), axis=1)
 
 
 
@@ -334,6 +499,5 @@ plt.savefig('Arrivals x Income.png')
 plt.show() 
     
 #_______________________
-
 
 
