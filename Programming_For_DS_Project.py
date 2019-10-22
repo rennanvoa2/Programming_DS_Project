@@ -654,6 +654,20 @@ plt.show()
 #_______________________
 
 
+#New Graphs
+#Arrivals
+
+ax = sb.barplot(y= arrival_top_10['Growth x Avarage'], x = arrival_top_10.index.values, data = arrival_top_10, palette=("Blues_d"))
+plt.ylabel("% Growth")
+plt.title('Top 10 Arrivals')
+sb.set_context("poster")
+
+#Income
+
+ax2 = sb.barplot(y= income_top_10['Growth x Avarage x Avg Exp'], x = income_top_10.index.values, data = income_top_10, palette=("Greens_d"))
+plt.ylabel("% Growth")
+plt.title('Top 10 Income')
+sb.set_context("poster")
 
 
 
