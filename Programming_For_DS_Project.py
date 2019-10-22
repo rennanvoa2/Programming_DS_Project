@@ -1,3 +1,4 @@
+
 #Imports
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -439,7 +440,7 @@ for i in years[0]:
 
 
 #and filling the nan's on arrivals_df
-arrivals_df.loc[:,'2007':'2017'] = pd.concat([data_income_complete, data_income_incomplete])
+income_df.loc[:,'2007':'2017'] = pd.concat([data_income_complete, data_income_incomplete])
 
 
 
@@ -649,5 +650,6 @@ plt.savefig('Arrivals x Income.png')
 plt.show() 
     
 #_______________________
+
 
 
