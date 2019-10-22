@@ -1,5 +1,3 @@
-
-
 #Imports
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from copy import deepcopy
 from sklearn.svm import LinearSVR
+import seaborn as sb
 
 
 #Define the URI from the github files (Number of Arrivels and Income)
@@ -557,52 +556,28 @@ arrival_top_10 = Arrivals_in_growth_vs_arrivals.iloc[0:10,:]
 #get the best 10 results in income
 income_top_10 = income_in_growth_vs_income.iloc[0:10,:]
 
-
-# plotting the points 
-plt.bar(arrival_top_10.index.values, arrival_top_10['Growth x Avarage'], color='blue')
-
-#Resize the figure to 50x20
-plt.rcParams['figure.figsize'] = (30,10)
-
- 
-# naming the x axis 
-plt.xlabel('Countries') 
-
-# naming the y axis 
-plt.ylabel('% in Growth x % in Number') 
-  
-# giving a title
-plt.title("Arrival's") 
-
-#Save it in a png file for better view
-plt.savefig('Arrivals.png')
-
-# function to show the plot 
-plt.show() 
-
-
+    
 #________________________________________________________
 
-# plotting the points 
-plt.bar(income_top_10.index.values, income_top_10['Growth x Avarage x Avg Exp'], color='orange')
 
-#Resize the figure to 50x20
-plt.rcParams['figure.figsize'] = (30,10)
+#New Graphs
+#Arrivals
 
-# naming the x axis 
-plt.xlabel('Countries') 
+ax = sb.barplot(y= arrival_top_10['Growth x Avarage'], x = arrival_top_10.index.values, data = arrival_top_10, palette=("Blues_d"))
+plt.ylabel("% Growth")
+plt.title('Top 10 Arrivals')
+plt.savefig('Arrivals.png')
+sb.set_context("poster")
+plt.show()
 
-# naming the y axis 
-plt.ylabel('% in Growth x % in Number') 
-  
-# giving a title 
-plt.title('Income') 
+#Income
 
-#Save it in a png file for better view
+ax2 = sb.barplot(y= income_top_10['Growth x Avarage x Avg Exp'], x = income_top_10.index.values, data = income_top_10, palette=("Greens_d"))
+plt.ylabel("% Growth")
+plt.title('Top 10 Income')
 plt.savefig('Income.png')
-
-# function to show the plot 
-plt.show() 
+sb.set_context("poster")
+plt.show()
 
 
 #________________________________________________________
@@ -618,7 +593,6 @@ Arrivals_plus_income['Income GxA'] = income_df['Growth x Avarage x Avg Exp']
 
 #sort the DataFrame by income
 Arrivals_plus_income = Arrivals_plus_income.sort_values('Income GxA', ascending =False)
-
 
 
 #Plot  income Values on a Bar chart
@@ -647,27 +621,9 @@ plt.legend()
 #Save it in a png file for better view
 plt.savefig('Arrivals x Income.png')
 
-
 # function to show the plot 
-plt.show() 
-    
-#_______________________
+plt.show()
 
-
-#New Graphs
-#Arrivals
-
-ax = sb.barplot(y= arrival_top_10['Growth x Avarage'], x = arrival_top_10.index.values, data = arrival_top_10, palette=("Blues_d"))
-plt.ylabel("% Growth")
-plt.title('Top 10 Arrivals')
-sb.set_context("poster")
-
-#Income
-
-ax2 = sb.barplot(y= income_top_10['Growth x Avarage x Avg Exp'], x = income_top_10.index.values, data = income_top_10, palette=("Greens_d"))
-plt.ylabel("% Growth")
-plt.title('Top 10 Income')
-sb.set_context("poster")
 
 
 
