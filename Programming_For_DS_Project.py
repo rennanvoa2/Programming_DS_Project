@@ -1,4 +1,5 @@
 
+
 #Imports
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,9 +13,9 @@ from sklearn.svm import LinearSVR
 
 
 #Define the URI from the github files (Number of Arrivels and Income)
-income_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Income.csv?token=AGBCKJR4XZIDLPKEMDYI5UK5VXNQW'
-arrival_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/International%20Arrivals.csv?token=AGBCKJWXYPAEJDA36VRCGV25VXLRI'
-metadata_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Metadata_Country.csv?token=AGBCKJSRZS3NU57NV5N7MZS5V4P7M'
+income_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Income.csv?token=AGBCKJVXIT3ASEMYSFAM2X25XA52W'
+arrival_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/International%20Arrivals.csv?token=AGBCKJX7PXSB72QEPXFR37S5XA5WU'
+metadata_uri = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Metadata_Country.csv?token=AGBCKJRD4VFGTAHO5I6I2BS5XA54Q'
 
 #Read the Arrivals CSV
 arrivals=pd.read_csv(arrival_uri, header=2)
@@ -46,10 +47,10 @@ arrivals_df = arrivals_df[arrivals_df.Is_Country != False]
 #Count number of itens in the DataFrame
 arrivals_df['Country Code'].count()
 
-#Count not nulls in column 2008
+#Count not nulls in column 2007
 arrivals_df['2007'].count()
 
-#count nulls in 2008
+#count nulls in 2007
 arrivals_df['2007'].isnull().sum()
 
 #drop the Is_Country column becouse we dont need it anymore
@@ -58,6 +59,7 @@ arrivals_df.drop('Is_Country', inplace=True, axis=1)
 #drop rows with 3 or more NANs values
 arrivals_df.dropna(thresh=(len(arrivals_df.loc[:,'2008':'2017'].columns) - 1), inplace=True, axis=0)
 
+len(arrivals_df.columns)
 #Check if the number of itens is correspondent after drop the rows
 arrivals_df['Country Code'].count()
 
@@ -88,7 +90,7 @@ svr_arrival_errors = []
 #KN Regressor
 for i in years[0]:
     
-    #i = years[0][0]
+
     
     X_train, X_test, y_train, y_test = train_test_split(data_arrivals_complete.loc[:,data_arrivals_complete.columns != i].values,
                                                         data_arrivals_complete.loc[:,i].values, test_size = 0.2, random_state = 0)
@@ -439,7 +441,7 @@ for i in years[0]:
 
 
 
-#and filling the nan's on arrivals_df
+#and filling the nan's on income_df
 income_df.loc[:,'2007':'2017'] = pd.concat([data_income_complete, data_income_incomplete])
 
 
@@ -650,6 +652,10 @@ plt.savefig('Arrivals x Income.png')
 plt.show() 
     
 #_______________________
+
+
+
+
 
 
 
