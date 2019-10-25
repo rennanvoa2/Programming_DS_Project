@@ -184,9 +184,6 @@ def common_fm(data_df):
     return data_df
 
 
-
-
-
 #Define the URI from the github files (Number of Arrivels and Income)
 income_url = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Income.csv?token=AGBCKJVXIT3ASEMYSFAM2X25XA52W'
 arrival_url = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/International%20Arrivals.csv?token=AGBCKJX7PXSB72QEPXFR37S5XA5WU'
@@ -195,7 +192,6 @@ metadata_url = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Proj
 
 
 arrivals_df = download_data(arrival_url,metadata_url)
-
 
 #Count number of itens in the DataFrame
 arrivals_df['Country Code'].count()
@@ -292,22 +288,22 @@ Arrivals_in_growth_vs_arrivals = arrivals_df.sort_values('Growth x Average', asc
 income_df = common_fm(income_df)
 
 #Create Avarage expenditure per person
-income_df['AVG_expenditure_per_person'] = income_df['Avg_Income_10_Years'] / arrivals_df['Avg_Arrivals_10_Years']
+income_df['AVG_expenditure_per_person'] = income_df['Avg_10_Years'] / arrivals_df['Avg_10_Years']
 
 
 #divide each value of Avarage per person for the sum of the column
 income_df['%Avg_Per_Person'] = income_df['AVG_expenditure_per_person'] / income_df['AVG_expenditure_per_person'].sum()
 
 #Calculate the avarage between Growth and Avarage Numbers of Arrivals
-income_df['Growth x Avarage x Avg Exp'] = (income_growth_weight * income_df['% growth'] +
-               (income_total_number_weight* income_df['%Avg_Incomes']) + 
+income_df['Growth x Average x Avg Exp'] = (income_growth_weight * income_df['% growth'] +
+               (income_total_number_weight* income_df['%Avg']) + 
                avg_per_person_weight * income_df['%Avg_Per_Person']) / (income_total_number_weight + 
                                                 income_growth_weight + avg_per_person_weight)
 
 
 
 #create a dataframe sorted by Growth X Avarage
-income_in_growth_vs_income = income_df.sort_values('Growth x Avarage x Avg Exp', ascending=False)
+income_in_growth_vs_income = income_df.sort_values('Growth x Average x Avg Exp', ascending=False)
 
 
 ########################################################################################
@@ -335,12 +331,10 @@ income_top_10 = income_in_growth_vs_income.iloc[0:10,:]
 ########################################################################################
 
 
-
-
 #New Graphs
 #Arrivals
 
-ax = sb.barplot(y= arrival_top_10['Growth x Avarage'], x = arrival_top_10.index.values, data = arrival_top_10, palette=("Blues_d"))
+ax = sb.barplot(y= arrival_top_10['Growth x Average'], x = arrival_top_10.index.values, data = arrival_top_10, palette=("Blues_d"))
 plt.ylabel("% Growth")
 plt.title('Top 10 Arrivals')
 plt.savefig('Arrivals.png')
@@ -349,7 +343,7 @@ plt.show()
 
 #Income
 
-ax2 = sb.barplot(y= income_top_10['Growth x Avarage x Avg Exp'], x = income_top_10.index.values, data = income_top_10, palette=("Greens_d"))
+ax2 = sb.barplot(y= income_top_10['Growth x Average x Avg Exp'], x = income_top_10.index.values, data = income_top_10, palette=("Greens_d"))
 plt.ylabel("% Growth")
 plt.title('Top 10 Income')
 plt.savefig('Income.png')
@@ -365,8 +359,8 @@ label_array = list(set(list(arrival_top_10.index.values)+ list(income_top_10.ind
 
 #Create a dataframe with the sum of top arrivals + top income
 Arrivals_plus_income = pd.DataFrame(index=label_array)
-Arrivals_plus_income['Arrivals GxA'] = arrivals_df['Growth x Avarage']
-Arrivals_plus_income['Income GxA'] = income_df['Growth x Avarage x Avg Exp']
+Arrivals_plus_income['Arrivals GxA'] = arrivals_df['Growth x Average']
+Arrivals_plus_income['Income GxA'] = income_df['Growth x Average x Avg Exp']
 
 #sort the DataFrame by income
 Arrivals_plus_income = Arrivals_plus_income.sort_values('Income GxA', ascending =False)
@@ -387,7 +381,7 @@ plt.rcParams['figure.figsize'] = (30,10)
 plt.xlabel('Top Countries') 
 
 # naming the y axis 
-plt.ylabel('Income & Arrivals (Growth x Avarage)') 
+plt.ylabel('Income & Arrivals (Growth x Average)') 
   
 # giving a title
 plt.title('Growth x Total Number of Arrivals') 
