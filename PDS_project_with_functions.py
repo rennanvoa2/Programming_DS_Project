@@ -189,13 +189,21 @@ metadata_url = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Proj
 arrivals_df = download_data(arrival_url,metadata_url)
 income_df=download_data(income_url,metadata_url)
 
-dif_row=arrivals_df.merge(income_df,on='Country Code')
-dif_row = dif_row['Country Code']
 
+#list of the names of the columns we are going to use
+years = ['2007','2008','2009','2010','2011','2012','2013','2014', '2015','2016', '2017']
 
-    
+#dif_row is a merged dataframe that only has common rows of information, merged by Country Code
+dif_row=pd.merge(arrivals_df,income_df,on='Country Code',left_index=True)
+dif_row=dif_row.drop(['Country Code'], axis=1)
 
+#final arrivals_df and income_df is finally created
+arrivals_df=dif_row.iloc[:,0:int(len(dif_row.columns)/2)]
+income_df=dif_row.iloc[:,int(len(dif_row.columns)/2):]
 
+#renaming columns with the correct names
+arrivals_df.columns = years
+income_df.columns = years
 
 ########################################################################################
 #                              REGRESSION TEST AND FIRST APPLICATION
