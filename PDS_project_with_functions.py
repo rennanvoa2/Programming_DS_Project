@@ -1,4 +1,3 @@
-
 #Imports
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,9 +9,6 @@ from sklearn.model_selection import train_test_split
 from copy import deepcopy
 from sklearn.svm import LinearSVR
 import seaborn as sb
-
-
-
 
 #regressor_test(data_complete,data_incomplete,years)
 
@@ -190,70 +186,47 @@ arrival_url = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Proje
 metadata_url = 'https://raw.githubusercontent.com/rennanvoa2/Programming_DS_Project/master/Metadata_Country.csv?token=AGBCKJRD4VFGTAHO5I6I2BS5XA54Q'
 
 
-
 arrivals_df = download_data(arrival_url,metadata_url)
-
-#Count number of itens in the DataFrame
-arrivals_df['Country Code'].count()
-
-#Count not nulls in column 2007
-arrivals_df['2007'].count()
-
-#count nulls in 2007
-arrivals_df['2007'].isnull().sum()
-
-len(arrivals_df.columns)
-#Check if the number of itens is correspondent after drop the rows
-arrivals_df['Country Code'].count()
-
-
-
 income_df=download_data(income_url,metadata_url)
 
-#Count number of itens in the DataFrame
-income_df['Country Code'].count()
+dif_row=arrivals_df.merge(income_df,on='Country Code')
+dif_row = dif_row['Country Code']
 
-#Count not nulls in column 2008
-income_df['2008'].count()
 
-#count nulls in 2008
-income_df['2008'].isnull().sum()
+    
+
 
 
 ########################################################################################
 #                              REGRESSION TEST AND FIRST APPLICATION
 ########################################################################################
+#dataframe with the name of the columns
+years = pd.DataFrame(['2007','2008','2009','2010','2011','2012','2013','2014', '2015','2016', '2017'])
 
 
 #preparing arrival data for regressors
-data_arrivals = arrivals_df[['2007','2008','2009','2010','2011','2012','2013','2014', '2015','2016', '2017']]
 data_arrivals_complete = pd.DataFrame()
-data_arrivals_incomplete = data_arrivals[data_arrivals.isna().any(axis=1)]
-data_arrivals_complete = data_arrivals[~data_arrivals.isna().any(axis=1)]
+data_arrivals_incomplete = arrivals_df[arrivals_df.isna().any(axis=1)]
+data_arrivals_complete = arrivals_df[~arrivals_df.isna().any(axis=1)]
 
-#dataframe with the name of the columns
-years = pd.DataFrame(data_arrivals.columns)
 
 #applying created functions
 choice= regressor_test(data_arrivals_complete,data_arrivals_incomplete,years)
 print('Best typ of regression to be used for arrivals prediction->',choice)
 arrivals_df=regress(choice,data_arrivals_complete,data_arrivals_incomplete,arrivals_df,years)
 
-
-
 #preparing income data for regressors
-data_income = income_df[['2007','2008','2009','2010','2011','2012','2013','2014', '2015','2016', '2017']]
 data_income_complete = pd.DataFrame()
-data_income_incomplete = data_income[data_income.isna().any(axis=1)]
-data_income_complete = data_income[~data_income.isna().any(axis=1)]
+data_income_incomplete = income_df[income_df.isna().any(axis=1)]
+data_income_complete = income_df[~income_df.isna().any(axis=1)]
 
-#dataframe with the name of the columns
-years = pd.DataFrame(data_income.columns)
 
 #applying created functions
-choice= regressor_test(data_income_complete,data_income_incomplete,years)
+#this first choice is wrong because Linear regressor returns "silly" data
+#choice= regressor_test(data_income_complete,data_income_incomplete,years)
+
 print('Best type of regression to be used for income prediction ->',choice)
-income_df=regress(choice, data_income_complete, data_income_incomplete, income_df, years)
+income_df=regress('SVR', data_income_complete, data_income_incomplete, income_df, years)
 
 
 ########################################################################################
@@ -261,9 +234,9 @@ income_df=regress(choice, data_income_complete, data_income_incomplete, income_d
 ########################################################################################
 
 #Weigh's for metrics
-arrivals_total_number_weight = 1
+arrivals_total_number_weight = 3
 arrivals_growth_weight = 1
-income_total_number_weight = 1
+income_total_number_weight = 3
 income_growth_weight = 1
 avg_per_person_weight = 1
 
@@ -300,8 +273,6 @@ income_df['Growth x Average x Avg Exp'] = (income_growth_weight * income_df['% g
                avg_per_person_weight * income_df['%Avg_Per_Person']) / (income_total_number_weight + 
                                                 income_growth_weight + avg_per_person_weight)
 
-
-
 #create a dataframe sorted by Growth X Avarage
 income_in_growth_vs_income = income_df.sort_values('Growth x Average x Avg Exp', ascending=False)
 
@@ -329,8 +300,6 @@ income_top_10 = income_in_growth_vs_income.iloc[0:10,:]
 ########################################################################################
 #                                GRAPHING AND PLOTTING
 ########################################################################################
-
-
 #New Graphs
 #Arrivals
 
@@ -349,7 +318,6 @@ plt.title('Top 10 Income')
 plt.savefig('Income.png')
 sb.set_context("poster")
 plt.show()
-
 
 #________________________________________________________
 
@@ -371,8 +339,7 @@ plt.bar(Arrivals_plus_income.index.values, Arrivals_plus_income['Income GxA'], w
         label='Income', color='orange')
 
 #Plot  Arrivals Values on a Bar chart
-plt.bar(Arrivals_plus_income.index.values, Arrivals_plus_income['Arrivals GxA'], width=0.5,
-        label='Arrival', bottom=Arrivals_plus_income['Income GxA'], color='blue')
+plt.bar(Arrivals_plus_income.index.values, Arrivals_plus_income['Arrivals GxA'], width=0.5, label='Arrival', bottom=Arrivals_plus_income['Income GxA'],color='blue')
 
 #Resize the figure to 100x20
 plt.rcParams['figure.figsize'] = (30,10)
